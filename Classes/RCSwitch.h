@@ -34,7 +34,7 @@
 	UIImage *buttonEndTrack;
 	UIImage *buttonEndTrackPressed;
 	
-	UILabel *onText, *offText;
+	UILabel *onTextLabel, *offTextLabel;
 	
 	float percent, oldPercent;
 	float knobWidth;
@@ -58,13 +58,8 @@
 
 - (void)setOn:(BOOL)aBool animated:(BOOL)animated;
 
-- (void) setOnLabelText:(NSString *)labelText 
-                     font:(UIFont*)labelFont
-                    color: (UIColor *)labelColor;
-- (void) setOffLabelText:(NSString *)labelText 
-                      font:(UIFont*)labelFont 
-                     color:(UIColor *)labelColor;
-
+@property (nonatomic, copy) NSString *onText;			// default: 'ON' - not automatically localized!
+@property (nonatomic, copy) NSString *offText;			// default: 'OFF' - not automatically localized!
 
 /* Override to draw your own custom text or graphics in the track */
 - (void)drawUnderlayersInRect:(CGRect)aRect withOffset:(float)offset inTrackWidth:(float)trackWidth;

@@ -30,7 +30,7 @@
 @end
 
 @implementation RCSwitch
-@synthesize textPadding;
+@synthesize textPadding, onText, offText;
 
 - (void)initCommon
 {
@@ -56,22 +56,22 @@
 	self.opaque = NO;
 	
 	//add the label work
-	onText = [UILabel new];
-	onText.text = NSLocalizedString(@"ON", @"Switch localized string");
-	onText.textColor = [UIColor whiteColor];
-	onText.font = [UIFont boldSystemFontOfSize:17];
-	onText.shadowColor = [UIColor colorWithWhite:0.175 alpha:1.0];
-	onText.textAlignment = UITextAlignmentCenter;
-	onText.adjustsFontSizeToFitWidth = YES;
-	onText.minimumFontSize = 10.0;
+	onTextLabel = [UILabel new];
+	onTextLabel.text = NSLocalizedString(@"ON", @"Switch localized string");
+	onTextLabel.textColor = [UIColor whiteColor];
+	onTextLabel.font = [UIFont boldSystemFontOfSize:17];
+	onTextLabel.shadowColor = [UIColor colorWithWhite:0.175 alpha:1.0];
+	onTextLabel.textAlignment = UITextAlignmentCenter;
+	onTextLabel.adjustsFontSizeToFitWidth = YES;
+	onTextLabel.minimumFontSize = 10.0;
 	
-	offText = [UILabel new];
-	offText.text = NSLocalizedString(@"OFF", @"Switch localized string");
-	offText.textColor = [UIColor grayColor];
-	offText.font = [UIFont boldSystemFontOfSize:17];
-	offText.textAlignment = UITextAlignmentCenter;
-	offText.adjustsFontSizeToFitWidth = YES;
-	offText.minimumFontSize = 10.0;
+	offTextLabel = [UILabel new];
+	offTextLabel.text = NSLocalizedString(@"OFF", @"Switch localized string");
+	offTextLabel.textColor = [UIColor grayColor];
+	offTextLabel.font = [UIFont boldSystemFontOfSize:17];
+	offTextLabel.textAlignment = UITextAlignmentCenter;
+	offTextLabel.adjustsFontSizeToFitWidth = YES;
+	offTextLabel.minimumFontSize = 10.0;
 }
 
 - (id)initWithFrame:(CGRect)aRect
@@ -228,14 +228,14 @@
 		CGRect textRect = aRect;
 		textRect.origin.x += 6.0 + (offset - trackWidth);
 		textRect.size.width = trackWidth - 6.0;
-		[onText drawTextInRect:textRect];	
+		[onTextLabel drawTextInRect:textRect];	
 	}
 	
 	{
 		CGRect textRect = aRect;
 		textRect.origin.x += knobWidth + offset + 3.0;
 		textRect.size.width = trackWidth - 9.0;
-		[offText drawTextInRect:textRect];
+		[offTextLabel drawTextInRect:textRect];
 	}
 }
 
@@ -363,38 +363,6 @@
 	}	
 }
 
-- (void) setOnLabelText:(NSString *)labelText 
-				   font:(UIFont*)labelFont
-				  color: (UIColor *)labelColor;
-{
-	if(labelText)
-		onText.text = labelText;
-	
-	if(labelFont)	
-		onText.font = labelFont;
-	
-	if(labelColor)
-		onText.textColor = labelColor;
-
-	[self regenerateImages];
-}
-
-- (void) setOffLabelText:(NSString *)labelText 
-					font:(UIFont*)labelFont 
-				   color:(UIColor *)labelColor;
-{
-	if(labelText)
-		offText.text = labelText;
-	
-	if(labelFont)	
-		offText.font = labelFont;
-	
-	if(labelColor)
-		offText.textColor = labelColor;
-	
-	[self regenerateImages];
-}
-
 - (CGFloat)nonTextWidth;
 {
 	return knobWidth + endcapWidth/2;
@@ -488,15 +456,37 @@
 	[self sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
+- (NSString *)onText
+{
+	return onTextLabel.text;
+}
+
+- (NSString *)offText
+{
+	return offTextLabel.text;
+}
+
+- (void)setOnText:(NSString *)text
+{
+	onTextLabel.text = text;
+	[self regenerateImages];
+}
+
+- (void)setOffText:(NSString *)text
+{
+	offTextLabel.text = text;
+	[self regenerateImages];
+}
+
 #pragma mark -
 #pragma mark Autoresize
 - (void)sizeToFit;
 {
-	NSString *onString = onText.text;
-	NSString *offString = offText.text;
+	NSString *onString = onTextLabel.text;
+	NSString *offString = offTextLabel.text;
 	
-	CGFloat width = [onString sizeWithFont:onText.font].width;
-	CGFloat offWidth = [offString sizeWithFont:offText.font].width;
+	CGFloat width = [onString sizeWithFont:onTextLabel.font].width;
+	CGFloat offWidth = [offString sizeWithFont:offTextLabel.font].width;
 	
 	if(offWidth > width)
 		width = offWidth;
