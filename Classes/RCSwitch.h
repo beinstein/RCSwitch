@@ -23,7 +23,8 @@
 #import <UIKit/UIKit.h>
 
 
-@interface RCSwitch : UIControl {
+@interface RCSwitch : UIControl
+{
 	UIImage *knobImage;
 	UIImage *knobImagePressed;
 	
@@ -33,13 +34,16 @@
 	UIImage *buttonEndTrack;
 	UIImage *buttonEndTrackPressed;
 	
+	UILabel *onText, *offText;
+	
 	float percent, oldPercent;
 	float knobWidth;
 	float endcapWidth;
 	CGPoint startPoint;
 	float scale;
+	CGFloat textPadding;
 	float animationDuration;
-	
+
 	CGSize lastBoundsSize;
 	
 	NSDate *endDate;
@@ -52,11 +56,21 @@
 /* Override to regenerate anything you need when the view changes sizes */
 - (void)regenerateImages;
 
+- (void)setOn:(BOOL)aBool animated:(BOOL)animated;
+
+- (void) setOnLabelText:(NSString *)labelText 
+                     font:(UIFont*)labelFont
+                    color: (UIColor *)labelColor;
+- (void) setOffLabelText:(NSString *)labelText 
+                      font:(UIFont*)labelFont 
+                     color:(UIColor *)labelColor;
+
+
 /* Override to draw your own custom text or graphics in the track */
 - (void)drawUnderlayersInRect:(CGRect)aRect withOffset:(float)offset inTrackWidth:(float)trackWidth;
 @property(readwrite,assign) float knobWidth;
 
-- (void)setOn:(BOOL)aBool animated:(BOOL)animated;
 @property(readwrite,assign,getter=isOn) BOOL on;
+@property (nonatomic, assign) CGFloat textPadding;
 
 @end

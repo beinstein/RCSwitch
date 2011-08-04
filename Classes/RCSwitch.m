@@ -26,33 +26,58 @@
 @interface RCSwitch ()
 - (void)regenerateImages;
 - (void)performSwitchToPercent:(float)toPercent;
+- (CGFloat)nonTextWidth;
 @end
 
 @implementation RCSwitch
+@synthesize textPadding;
 
 - (void)initCommon
 {
 	/* It seems that the animation length was changed in iOS 4.0 to animate the switch slower. */
-	if(kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_4_0){
+	if(kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_4_0)
 		animationDuration = 0.25;
-	} else {
+	else
 		animationDuration = 0.175;
-	}
+	
 	self.contentMode = UIViewContentModeRedraw;
+	self.textPadding = 6.0;
+	self.backgroundColor = [UIColor clearColor];
 	[self setKnobWidth:44];
 	[self regenerateImages];
 	sliderOff = [[[UIImage imageNamed:@"btn_slider_off.png"] stretchableImageWithLeftCapWidth:12.0
 																				 topCapHeight:0.0] retain];
+	
 	if([[UIScreen mainScreen] respondsToSelector:@selector(scale)])
-		scale = [[UIScreen mainScreen] scale];
+		scale = (double)[[UIScreen mainScreen] scale];
 	else
 		scale = 1.0;
+	
 	self.opaque = NO;
+	
+	//add the label work
+	onText = [UILabel new];
+	onText.text = NSLocalizedString(@"ON", @"Switch localized string");
+	onText.textColor = [UIColor whiteColor];
+	onText.font = [UIFont boldSystemFontOfSize:17];
+	onText.shadowColor = [UIColor colorWithWhite:0.175 alpha:1.0];
+	onText.textAlignment = UITextAlignmentCenter;
+	onText.adjustsFontSizeToFitWidth = YES;
+	onText.minimumFontSize = 10.0;
+	
+	offText = [UILabel new];
+	offText.text = NSLocalizedString(@"OFF", @"Switch localized string");
+	offText.textColor = [UIColor grayColor];
+	offText.font = [UIFont boldSystemFontOfSize:17];
+	offText.textAlignment = UITextAlignmentCenter;
+	offText.adjustsFontSizeToFitWidth = YES;
+	offText.minimumFontSize = 10.0;
 }
 
 - (id)initWithFrame:(CGRect)aRect
 {
-	if((self = [super initWithFrame:aRect])){
+	if((self = [super initWithFrame:aRect]))
+	{
 		[self initCommon];
 	}
 	return self;
@@ -73,6 +98,8 @@
 	[knobImagePressed release];
 	[sliderOn release];
 	[sliderOff release];
+	[onText release];
+	[offText release];
 	[buttonEndTrack release];
 	[buttonEndTrackPressed release];
 	[super dealloc];
@@ -81,14 +108,14 @@
 - (void)setKnobWidth:(float)aFloat
 {
 	knobWidth = roundf(aFloat); // whole pixels only
-	endcapWidth = roundf(knobWidth - 8);
+	endcapWidth = roundf(knobWidth / 2.0);
 	
 	{
-		UIImage *knobTmpImage = [[[UIImage imageNamed:@"btn_slider_thumb.png"] retain] autorelease];
+		UIImage *knobTmpImage = [UIImage imageNamed:@"btn_slider_thumb.png"];
 		UIImage *knobImageStretch = [knobTmpImage stretchableImageWithLeftCapWidth:12.0
 																	  topCapHeight:0.0];
 		CGRect knobRect = CGRectMake(0, 0, knobWidth, [knobImageStretch size].height);
-
+		
 		if(UIGraphicsBeginImageContextWithOptions != NULL)
 			UIGraphicsBeginImageContextWithOptions(knobRect.size, NO, scale);
 		else
@@ -101,10 +128,11 @@
 	}
 	
 	{
-		UIImage *knobTmpImage = [[[UIImage imageNamed:@"btn_slider_thumb_pressed.png"] retain] autorelease];
+		UIImage *knobTmpImage = [UIImage imageNamed:@"btn_slider_thumb_pressed.png"];
 		UIImage *knobImageStretch = [knobTmpImage stretchableImageWithLeftCapWidth:12.0
 																	  topCapHeight:0.0];
 		CGRect knobRect = CGRectMake(0, 0, knobWidth, [knobImageStretch size].height);
+		
 		if(UIGraphicsBeginImageContextWithOptions != NULL)
 			UIGraphicsBeginImageContextWithOptions(knobRect.size, NO, scale);
 		else
@@ -128,12 +156,15 @@
 																						   topCapHeight:0.0];
 	CGRect sliderOnRect = boundsRect;
 	sliderOnRect.size.height = [sliderOnBase size].height;
+	
 	if(UIGraphicsBeginImageContextWithOptions != NULL)
 		UIGraphicsBeginImageContextWithOptions(sliderOnRect.size, NO, scale);
 	else
 		UIGraphicsBeginImageContext(sliderOnRect.size);
+	
 	[sliderOnBase drawInRect:sliderOnRect];
 	[sliderOn release];
+	sliderOn = nil;
 	sliderOn = [UIGraphicsGetImageFromCurrentImageContext() retain];
 	UIGraphicsEndImageContext();
 	
@@ -148,6 +179,7 @@
 	CGContextSetBlendMode(context, kCGBlendModeDestinationAtop);
 	CGContextDrawImage(context, sliderOnRect, [sliderOnBase CGImage]);
 	[sliderOn release];
+	sliderOn = nil;
 	sliderOn = [UIGraphicsGetImageFromCurrentImageContext() retain];
 	UIGraphicsEndImageContext();	
 #endif
@@ -158,14 +190,17 @@
 																		  topCapHeight:0.0];
 		CGRect sliderOnRect = boundsRect;
 		/* works around < 4.0 bug with not scaling height (see http://stackoverflow.com/questions/785986/resizing-an-image-with-stretchableimagewithleftcapwidth) */
+		
 		if(UIGraphicsBeginImageContextWithOptions != NULL)
 			UIGraphicsBeginImageContextWithOptions(sliderOnRect.size, NO, scale);
-		else {
-			CGSize testSize = sliderOnRect.size;
+		else
+		{
+			//CGSize testSize = sliderOnRect.size;
 			UIGraphicsBeginImageContext(sliderOnRect.size);
 		}
 		[buttonEndTrackBase drawInRect:sliderOnRect];
 		[buttonEndTrack release];
+		buttonEndTrack = nil;
 		buttonEndTrack = [UIGraphicsGetImageFromCurrentImageContext() retain];
 		UIGraphicsEndImageContext();		
 	}
@@ -181,6 +216,7 @@
 			UIGraphicsBeginImageContext(sliderOnRect.size);		
 		[buttonEndTrackBase drawInRect:sliderOnRect];
 		[buttonEndTrackPressed release];
+		buttonEndTrackPressed = nil;
 		buttonEndTrackPressed = [UIGraphicsGetImageFromCurrentImageContext() retain];
 		UIGraphicsEndImageContext();		
 	}
@@ -188,6 +224,19 @@
 
 - (void)drawUnderlayersInRect:(CGRect)aRect withOffset:(float)offset inTrackWidth:(float)trackWidth
 {
+	{
+		CGRect textRect = aRect;
+		textRect.origin.x += 6.0 + (offset - trackWidth);
+		textRect.size.width = trackWidth - 6.0;
+		[onText drawTextInRect:textRect];	
+	}
+	
+	{
+		CGRect textRect = aRect;
+		textRect.origin.x += knobWidth + offset + 3.0;
+		textRect.size.width = trackWidth - 9.0;
+		[offText drawTextInRect:textRect];
+	}
 }
 
 - (void)drawRect:(CGRect)rect
@@ -314,6 +363,43 @@
 	}	
 }
 
+- (void) setOnLabelText:(NSString *)labelText 
+				   font:(UIFont*)labelFont
+				  color: (UIColor *)labelColor;
+{
+	if(labelText)
+		onText.text = labelText;
+	
+	if(labelFont)	
+		onText.font = labelFont;
+	
+	if(labelColor)
+		onText.textColor = labelColor;
+
+	[self regenerateImages];
+}
+
+- (void) setOffLabelText:(NSString *)labelText 
+					font:(UIFont*)labelFont 
+				   color:(UIColor *)labelColor;
+{
+	if(labelText)
+		offText.text = labelText;
+	
+	if(labelFont)	
+		offText.font = labelFont;
+	
+	if(labelColor)
+		offText.textColor = labelColor;
+	
+	[self regenerateImages];
+}
+
+- (CGFloat)nonTextWidth;
+{
+	return knobWidth + endcapWidth/2;
+}
+
 - (BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
 {
 	self.highlighted = YES;
@@ -330,12 +416,13 @@
 {
 	CGPoint point = [touch locationInView:self];
 	percent = (point.x - knobWidth / 2.0) / (self.bounds.size.width - knobWidth);
+	float width = self.bounds.size.width;
+	if(((width - knobWidth) * percent) > 3 || ((width - knobWidth) * percent) > (width - knobWidth - 3))
+		mustFlip = NO;
 	if(percent < 0.0)
 		percent = 0.0;
 	if(percent > 1.0)
 		percent = 1.0;
-	if(oldPercent < 0.25 && percent > 0.5 || oldPercent > 0.75 && percent < 0.5)
-		mustFlip = NO;
 	[self setNeedsDisplay];
 	[self sendActionsForControlEvents:UIControlEventTouchDragInside];
 	return YES;
@@ -346,20 +433,13 @@
 	self.highlighted = NO;
 	[endDate release];
 	endDate = nil;
+	float width = self.bounds.size.width;
 	float toPercent = roundf(1.0 - oldPercent);
 	if(!mustFlip){
-		if(oldPercent < 0.25){
-			if(percent > 0.5)
-				toPercent = 1.0;
-			else
-				toPercent = 0.0;
-		}
-		if(oldPercent > 0.75){
-			if(percent < 0.5)
-				toPercent = 0.0;
-			else
-				toPercent = 1.0;
-		}
+		if(((width - knobWidth) * percent) < 3)
+			toPercent = 0.0;
+		if(((width - knobWidth) * percent) > (width - knobWidth - 3))
+			toPercent = 1.0;
 	}
 	[self performSwitchToPercent:toPercent];
 }
@@ -379,11 +459,6 @@
 	return percent > 0.5;
 }
 
-- (void)setOn:(BOOL)aBool
-{
-	[self setOn:aBool animated:NO];
-}
-
 - (void)setOn:(BOOL)aBool animated:(BOOL)animated
 {
 	if(animated){
@@ -397,9 +472,15 @@
 	}
 }
 
+- (void)setOn:(BOOL)aBool
+{
+	[self setOn:aBool animated:NO];
+}
+
 - (void)performSwitchToPercent:(float)toPercent
 {
 	[endDate release];
+	endDate = nil;
 	endDate = [[NSDate dateWithTimeIntervalSinceNow:fabsf(percent - toPercent) * animationDuration] retain];
 	percent = toPercent;
 	[self setNeedsDisplay];
@@ -409,19 +490,25 @@
 
 #pragma mark -
 #pragma mark Autoresize
-- (UILabel *)onText;
+- (void)sizeToFit;
 {
-	return onText;
-}
-
-- (UILabel *)offText;
-{
-	return offText;
-}
-
-- (CGFloat)nonTextWidth;
-{
-	return knobWidth + endcapWidth/2;
+	NSString *onString = onText.text;
+	NSString *offString = offText.text;
+	
+	CGFloat width = [onString sizeWithFont:onText.font].width;
+	CGFloat offWidth = [offString sizeWithFont:offText.font].width;
+	
+	if(offWidth > width)
+		width = offWidth;
+	
+	width += [self nonTextWidth];
+	
+	CGRect existingFrame = self.frame;
+	CGFloat currentWidth = existingFrame.size.width;
+	existingFrame.size.width = width;
+	existingFrame.origin.x += currentWidth - width;
+	[self setFrame:existingFrame];
+	[self regenerateImages];
 }
 
 @end
