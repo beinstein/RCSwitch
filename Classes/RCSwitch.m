@@ -27,6 +27,7 @@
 - (void)regenerateImages;
 - (void)performSwitchToPercent:(float)toPercent;
 - (CGFloat)nonTextWidth;
+- (void)performSwitchToPercent:(float)toPercent ignoreControlEvents:(BOOL)ignoreControlEvents;
 @end
 
 @implementation RCSwitch
@@ -427,17 +428,24 @@
 	return percent > 0.5;
 }
 
-- (void)setOn:(BOOL)aBool animated:(BOOL)animated
+- (void)setOn:(BOOL)newOn animated:(BOOL)animated ignoreControlEvents:(BOOL)ignoreControlEvents
 {
 	if(animated){
-		float toPercent = aBool ? 1.0 : 0.0;
-		if(percent < 0.5 && aBool || percent > 0.5 && !aBool)
+		float toPercent = newOn ? 1.0 : 0.0;
+		if(percent < 0.5 && newOn || percent > 0.5 && !newOn)
 			[self performSwitchToPercent:toPercent];
 	} else {
-		percent = aBool ? 1.0 : 0.0;
+		percent = newOn ? 1.0 : 0.0;
 		[self setNeedsDisplay];
-		[self sendActionsForControlEvents:UIControlEventValueChanged];
+		
+		if(!ignoreControlEvents)
+			[self sendActionsForControlEvents:UIControlEventValueChanged];
 	}
+}
+
+- (void)setOn:(BOOL)aBool animated:(BOOL)animated
+{
+	[self setOn:aBool animated:animated ignoreControlEvents:NO];
 }
 
 - (void)setOn:(BOOL)aBool
@@ -445,15 +453,24 @@
 	[self setOn:aBool animated:NO];
 }
 
-- (void)performSwitchToPercent:(float)toPercent
+- (void)performSwitchToPercent:(float)toPercent ignoreControlEvents:(BOOL)ignoreControlEvents
 {
 	[endDate release];
 	endDate = nil;
 	endDate = [[NSDate dateWithTimeIntervalSinceNow:fabsf(percent - toPercent) * animationDuration] retain];
 	percent = toPercent;
 	[self setNeedsDisplay];
-	[self sendActionsForControlEvents:UIControlEventValueChanged];
-	[self sendActionsForControlEvents:UIControlEventTouchUpInside];
+	
+	if(!ignoreControlEvents)
+	{
+		[self sendActionsForControlEvents:UIControlEventValueChanged];
+		[self sendActionsForControlEvents:UIControlEventTouchUpInside];
+	}
+}
+
+- (void)performSwitchToPercent:(float)toPercent
+{
+	[self performSwitchToPercent:toPercent ignoreControlEvents:NO];
 }
 
 - (NSString *)onText

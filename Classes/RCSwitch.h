@@ -57,6 +57,7 @@
 - (void)regenerateImages;
 
 - (void)setOn:(BOOL)aBool animated:(BOOL)animated;
+- (void)setOn:(BOOL)newOn animated:(BOOL)animated ignoreControlEvents:(BOOL)ignoreControlEvents;
 
 @property (nonatomic, copy) NSString *onText;			// default: 'ON' - not automatically localized!
 @property (nonatomic, copy) NSString *offText;			// default: 'OFF' - not automatically localized!
