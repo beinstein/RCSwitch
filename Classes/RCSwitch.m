@@ -407,4 +407,21 @@
 	[self sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
+#pragma mark -
+#pragma mark Autoresize
+- (UILabel *)onText;
+{
+	return onText;
+}
+
+- (UILabel *)offText;
+{
+	return offText;
+}
+
+- (CGFloat)nonTextWidth;
+{
+	return knobWidth + endcapWidth/2;
+}
+
 @end
