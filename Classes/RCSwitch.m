@@ -432,7 +432,7 @@
 {
 	if(animated){
 		float toPercent = newOn ? 1.0 : 0.0;
-		if(percent < 0.5 && newOn || percent > 0.5 && !newOn)
+		if((percent < 0.5 && newOn) || (percent > 0.5 && !newOn))
 			[self performSwitchToPercent:toPercent];
 	} else {
 		percent = newOn ? 1.0 : 0.0;
